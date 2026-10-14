@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PresuInstalador — Presupuestos</title>
+<style>
+:root{--navy:#172d3a;--lime:#d8f078;--paper:#f4f6f4;--ink:#1c292f;--muted:#627078;--line:#dce3e2;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+header{background:var(--navy);color:white;padding:22px 16px 26px}header .wrap,main{max-width:900px;margin:auto}
+.brand{display:flex;align-items:center;gap:12px}.logo{background:var(--lime);color:var(--navy);border-radius:12px;padding:10px;font-size:23px;font-weight:800}
+h1{font-size:24px;margin:0}header p{margin:5px 0 0;color:#d8e1e5;font-size:14px}
+main{padding:16px;display:grid;gap:14px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 2px 8px #10273308}
+h2{font-size:17px;margin:0 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:5px}.field.full{grid-column:1/-1}
+label{font-size:13px;font-weight:650;color:#43535b}input,select,textarea{font:inherit;width:100%;padding:11px 12px;border:1px solid #cbd5d5;border-radius:9px;background:white;color:var(--ink);min-width:0}
+textarea{min-height:70px;resize:vertical}.items{display:grid;gap:12px}.item{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr 90px 105px 105px auto;gap:8px;align-items:end}
+.item .field label{font-size:11px}.item .field input{padding:9px 8px}.item .desc{grid-column:1/-1}.remove{border:0;background:#fff0ef;color:#a52820;border-radius:8px;padding:10px;cursor:pointer}
+button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 15px;cursor:pointer}.primary{background:var(--navy);color:white}.accent{background:var(--lime);color:var(--navy)}.secondary{background:#edf1f0;color:var(--navy)}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.summary{display:grid;gap:8px}.sumrow{display:flex;justify-content:space-between;gap:12px}.sumrow.total{font-size:21px;font-weight:800;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}.sumrow.profit{color:#236846;font-weight:700}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}.quotehead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.pill{background:#edf5d9;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:700}
+footer{max-width:900px;margin:0 auto;padding:0 16px 24px;color:var(--muted);font-size:12px}
+@media(max-width:680px){.grid{grid-template-columns:1fr}.item{grid-template-columns:1fr 1fr}.item .desc{grid-column:1/-1}.item .field:first-of-type{grid-column:1/-1}.remove{grid-column:1/-1}.quotehead{align-items:flex-start}}
+@media print{body{background:white}.no-print,header .subtitle,footer{display:none!important}header{padding:10px 0;background:white;color:black}.brand .logo{border:1px solid #888;background:white}header p{color:#444}main{padding:0;display:block}.card{box-shadow:none;border:0;padding:10px 0;break-inside:avoid}.item{border:0;border-bottom:1px solid #ddd;border-radius:0;padding:8px 0}.remove{display:none}input,textarea,select{border:0;padding:2px 0!important;appearance:none}.summary{max-width:360px;margin-left:auto}.quotehead{margin-bottom:10px}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="brand"><div class="logo">PI</div><div><h1>PresuInstalador</h1><p class="subtitle">Presupuestos rápidos para profesionales de instalación</p></div></div>
+</div></header>
+<main>
+<section class="card">
+  <div class="quotehead"><h2>Datos del presupuesto</h2><span class="pill">Prototipo gratuito</span></div>
+  <div class="grid">
+    <div class="field"><label for="company">Tu negocio / instalador</label><input id="company" placeholder="Nombre del negocio"></div>
+    <div class="field"><label for="phone">Teléfono</label><input id="phone" placeholder="Teléfono de contacto"></div>
+    <div class="field"><label for="client">Cliente</label><input id="client" placeholder="Nombre del cliente"></div>
+    <div class="field"><label for="date">Fecha</label><input id="date" type="date"></div>
+    <div class="field full"><label for="job">Trabajo / dirección</label><input id="job" placeholder="Ej. Instalación de toldo en terraza"></div>
+  </div>
+</section>
+<section class="card">
+  <h2>Materiales y mano de obra</h2>
+  <div class="items" id="items"></div>
+  <div class="actions no-print"><button class="secondary" id="add">+ Añadir línea</button></div>
+  <p class="note">Introduce tu coste por unidad. La app calcula el precio de venta aplicando el margen indicado. Revisa los precios antes de enviar el presupuesto.</p>
+</section>
+<section class="card">
+  <h2>Resumen</h2>
+  <div class="grid" style="margin-bottom:14px">
+    <div class="field"><label for="margin">Margen sobre coste (%)</label><input id="margin" type="number" min="0" max="1000" step="1" value="30"></div>
+    <div class="field"><label for="vat">IVA (%)</label><input id="vat" type="number" min="0" max="100" step="0.5" value="21"></div>
+  </div>
+  <div class="summary">
+    <div class="sumrow"><span>Coste estimado</span><strong id="costTotal">0,00 €</strong></div>
+    <div class="sumrow"><span>Subtotal de venta</span><strong id="subtotal">0,00 €</strong></div>
+    <div class="sumrow profit"><span>Beneficio estimado antes de impuestos</span><strong id="profit">0,00 €</strong></div>
+    <div class="sumrow"><span>IVA</span><strong id="vatAmount">0,00 €</strong></div>
+    <div class="sumrow total"><span>Total para el cliente</span><strong id="grandTotal">0,00 €</strong></div>
+  </div>
+  <div class="field" style="margin-top:14px"><label for="notes">Notas y condiciones</label><textarea id="notes" placeholder="Ej. Validez del presupuesto, plazo de instalación, forma de pago..."></textarea></div>
+  <div class="actions no-print">
+    <button class="primary" id="print">Imprimir / Guardar como PDF</button>
+    <button class="secondary" id="save">Guardar borrador en este dispositivo</button>
+    <button class="secondary" id="load">Recuperar borrador</button>
+    <button class="secondary" id="reset">Nuevo presupuesto</button>
+  </div>
+  <p class="note">El IVA se puede cambiar, pero debes confirmar el tipo aplicable a tu actividad. El beneficio mostrado no descuenta gastos generales, desplazamientos, seguros ni impuestos personales.</p>
+</section>
+</main>
+<footer>PresuInstalador es un prototipo de cálculo, no asesoramiento fiscal. Comprueba mediciones, costes, impuestos y condiciones antes de enviar un presupuesto.</footer>
+<script>
+const euro = n => new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR'}).format(Number.isFinite(n)?n:0);
+const items = document.getElementById('items');
+const dateInput = document.getElementById('date');
+dateInput.value = new Date().toISOString().slice(0,10);
+function addItem(desc='',qty=1,cost=0){
+ const row=document.createElement('div'); row.className='item';
+ row.innerHTML=`<div class="field desc"><label>Descripción</label><input class="descval" placeholder="Ej. Tela de toldo / instalación" value=""></div>
+ <div class="field"><label>Cantidad</label><input class="qty" type="number" min="0" step="0.01" value="1"></div>
+ <div class="field"><label>Coste unidad (€)</label><input class="cost" type="number" min="0" step="0.01" value="0"></div>
+ <div class="field"><label>Venta unidad (€)</label><input class="sell" type="text" readonly value="0,00 €"></div>
+ <button class="remove no-print" type="button" aria-label="Eliminar línea">Quitar</button>`;
+ row.querySelector('.descval').value=desc;row.querySelector('.qty').value=qty;row.querySelector('.cost').value=cost;
+ row.querySelectorAll('input').forEach(el=>el.addEventListener('input',calculate));
+ row.querySelector('.remove').addEventListener('click',()=>{row.remove();calculate()});
+ items.appendChild(row);calculate();
+}
+function calculate(){
+ let costTotal=0,subtotal=0;const margin=Math.max(0,Number(document.getElementById('margin').value)||0),vat=Math.max(0,Number(document.getElementById('vat').value)||0);
+ items.querySelectorAll('.item').forEach(row=>{
+  const q=Math.max(0,Number(row.querySelector('.qty').value)||0),c=Math.max(0,Number(row.querySelector('.cost').value)||0);
+  const unit=c*(1+margin/100);row.querySelector('.sell').value=euro(unit);
+  costTotal+=q*c;subtotal+=q*unit;
+ });
+ const profit=subtotal-costTotal,vatAmount=subtotal*vat/100;
+ document.getElementById('costTotal').textContent=euro(costTotal);
+ document.getElementById('subtotal').textContent=euro(subtotal);
+ document.getElementById('profit').textContent=euro(profit);
+ document.getElementById('vatAmount').textContent=euro(vatAmount);
+ document.getElementById('grandTotal').textContent=euro(subtotal+vatAmount);
+}
+function state(){
+ return {company:company.value,phone:phone.value,client:client.value,date:dateInput.value,job:job.value,margin:document.getElementById('margin').value,vat:document.getElementById('vat').value,notes:notes.value,items:[...items.querySelectorAll('.item')].map(r=>({desc:r.querySelector('.descval').value,qty:r.querySelector('.qty').value,cost:r.querySelector('.cost').value}))};
+}
+function restore(s){
+ ['company','phone','client','date','job','margin','vat','notes'].forEach(k=>{if(s[k]!==undefined)document.getElementById(k).value=s[k]});
+ items.innerHTML='';(s.items||[]).forEach(i=>addItem(i.desc,i.qty,i.cost));calculate();
+}
+document.getElementById('add').addEventListener('click',()=>addItem());
+document.getElementById('margin').addEventListener('input',calculate);
+document.getElementById('vat').addEventListener('input',calculate);
+document.getElementById('print').addEventListener('click',()=>window.print());
+document.getElementById('save').addEventListener('click',()=>{try{localStorage.setItem('presuinstalador-draft',JSON.stringify(state()));alert('Borrador guardado en este dispositivo.');}catch(e){alert('No se pudo guardar en este navegador. Prueba Imprimir / Guardar como PDF.');}});
+document.getElementById('load').addEventListener('click',()=>{try{const s=localStorage.getItem('presuinstalador-draft');if(!s){alert('No hay borrador guardado en este navegador.');return;}restore(JSON.parse(s));alert('Borrador recuperado.');}catch(e){alert('No se pudo recuperar el borrador.');}});
+document.getElementById('reset').addEventListener('click',()=>{if(confirm('¿Empezar un presupuesto nuevo? Guarda o imprime antes si necesitas conservar este.')){document.querySelectorAll('#company,#phone,#client,#job,#notes').forEach(x=>x.value='');dateInput.value=new Date().toISOString().slice(0,10);document.getElementById('margin').value=30;document.getElementById('vat').value=21;items.innerHTML='';addItem();}});
+['company','phone','client','date','job','notes'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{}));
+addItem('Materiales',1,0);addItem('Mano de obra',1,0);
+</script>
+</body>
+</html>
